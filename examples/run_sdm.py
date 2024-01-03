@@ -2,7 +2,7 @@ import pandas as pd
 from deepctr.feature_column import SparseFeat, VarLenSparseFeat
 from deepmatch.models import SDM
 from deepmatch.utils import sampledsoftmaxloss, NegativeSampler
-from preprocess import gen_data_set_sdm, gen_model_input_sdm
+from utils.preprocess import gen_data_set_sdm, gen_model_input_sdm
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model

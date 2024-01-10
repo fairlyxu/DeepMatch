@@ -1,5 +1,7 @@
 import os
-from utils import config,preprocess
+import sys
+sys.path.append('../')
+from utils import config, preprocess
 from features import features
 import tensorflow as tf
 from collections import Counter
@@ -16,21 +18,27 @@ from deepmatch.layers import custom_objects
 
 if __name__ == "__main__":
     yaml_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../conf/config.yaml")
+    feature_yaml_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../conf/features.yaml")
     conf = config.get_conf(yaml_path)
-    print(conf)
     TRAIN_CONF = conf.get("train")
     FEAT_CONF = conf.get("feat")
     MODEL_CONF = conf.get("model")
 
-    print("*" * 10," sample data process")
+    if TRAIN_CONF["init"]:
+        print("new start")
+
+    print("*" * 100," sample data process")
     SEQ_LEN = TRAIN_CONF.get('seq_len',50)
     negsample = TRAIN_CONF.get('negsample',10)
+
+    train_batch_size=TRAIN_CONF.get('batch_size',256)
+    train_epochs = TRAIN_CONF.get('epochs', 10)
 
     rnames = ['iid', 'uid', 'rating', 'timestamp']
     ratings = pd.read_csv(TRAIN_CONF.get('train_file').get('sample','../data/sample.dat'), sep='\t', header=None, names=rnames)
 
     # 获取用户特征
-    with open(TRAIN_CONF.get('train_file').get('user','../data/user.dat') , 'rb') as file:
+    with open(TRAIN_CONF.get('train_file').get('user','../data/user.dat'), 'rb') as file:
         user = pickle.load(file)
     # item 特征
     with open(TRAIN_CONF.get('train_file').get('item','../data/item.dat'), 'rb') as file:
@@ -55,41 +63,29 @@ if __name__ == "__main__":
 
     item.index.name = "index"
     user.index.name = "index"
-
-    samples = ratings.iloc[:1000]
+    samples = ratings#.iloc[:5000]
 
     t1 = time.time()
     rating_data_set = preprocess.gen_data_set(samples, SEQ_LEN, negsample)
     print("cost time:", time.time() - t1)
     rating_data = (pd.DataFrame(rating_data_set).iloc[:, 0:3]).rename(columns={0: 'uid', 1: 'iid', 2: 'rating'})
     data = pd.merge(pd.merge(rating_data, user), item)
+    print(data.head(10))
 
-    print("*" * 10, " features process")
-    user_sparse_features = preprocess.split_string(FEAT_CONF.get("user").get("sparse",""))  #['uid', 'u_st_2_country', 'u_st_2_lan', 'u_st_2_brand', 'u_st_2_channel']
-    user_dense_features = preprocess.split_string(FEAT_CONF.get("user").get("dense",""))
-    user_var_features = preprocess.split_string(FEAT_CONF.get("user").get("var",""))#['u_dy_5_implist', 'u_dy_5_clicklist', 'u_dy_5_installlist']
-    item_sparse_features = preprocess.split_string(FEAT_CONF.get("item").get("sparse","")) #['iid', 'd_st_cat3', 'd_st_from_type', 'd_st_offer']
-
-    item_dense_features = preprocess.split_string(FEAT_CONF.get("item").get("dense","")) #['d_dy_4_imppv', 'd_dy_4_clickpv', 'd_dy_4_installpv', 'os_install', 'os_install_ys',
-                           #'os_soaring', 'activate_uv', 'yesterday_2_data_count', 'remain_count_2', 'remain_rate_2',
-                           #'yesterday_7_data_count', 'remain_count_7', 'remain_rate_7', 'yesterday_30_data_count',
-                           #'remain_count_30', 'remain_rate_30', 'remain_rate']
-    item_var_features = preprocess.split_string(FEAT_CONF.get("item").get("var","")) #['d_st_tag']
-    var_features_label_file = FEAT_CONF.get("var_feat_file","../models/var_features_label.pkl")
-    sparse_features_label_file = FEAT_CONF.get("sparse_feat_file","../models/sparse_features_label.pkl")
+    print("*" * 100, " features process")
     feat_embedding_dim = FEAT_CONF.get("emb_dim", 16)
 
-    train_model_input,user_feature_columns,item_feature_columns = features.feat_process(data, user_var_features, item_var_features, var_features_label_file,
-                     user_sparse_features, item_sparse_features, sparse_features_label_file,
-                     user_dense_features, item_dense_features,feat_embedding_dim )
+    features_label_file = FEAT_CONF.get("features_label_file","../models/feature_label.pkl")
+
+    train_model_input, user_feature_columns, item_feature_columns = features.feat_process(data, feature_yaml_path,features_label_file,embedding_dim = 16)
 
     train_label = data["rating"]
-
-    print("*" * 10, " training process")
+    print("*" * 100, " training process")
     # 2.count #unique features for each sparse field and generate feature config for sequence feature
-
     train_counter = Counter(train_model_input['iid'])
-    item_count = [train_counter.get(i, 0) for i in range(item_feature_columns[0].vocabulary_size)]
+
+    vs = int(item_feature_columns[0].vocabulary_size)
+    item_count = [train_counter.get(int(i), 0) for i in range(vs)]
     sampler_config = NegativeSampler('inbatch', num_sampled=255, item_name="iid", item_count=item_count)
 
     weights_save_file = MODEL_CONF.get('weights_save','../models/dssm_weights.h5')
@@ -102,8 +98,6 @@ if __name__ == "__main__":
         K.set_learning_phase(True)
     try:
         model = load_model(weights_save_file, custom_objects)
-
-
     except:
         traceback.print_exc()
         print("init new model")
@@ -113,10 +107,15 @@ if __name__ == "__main__":
 
         model.compile(optimizer="adam", loss=sampledsoftmaxloss)
     # training
-    history = model.fit(train_model_input, train_label, batch_size=256, epochs=2, verbose=1, validation_split=0.2)
-    save_model(model, weights_save_file)
+    history = model.fit(train_model_input, train_label, batch_size=train_batch_size, epochs=train_epochs, verbose=1, validation_split=0.2)
+    traceback.print_exc()
 
+    save_model(model, weights_save_file)
     print(model)
+
+
+
+
 
 
 

@@ -46,10 +46,8 @@ if __name__ == "__main__":
                             SparseFeat("age", feature_max_idx['age'], embedding_dim),
                             SparseFeat("occupation", feature_max_idx['occupation'], embedding_dim),
                             SparseFeat("zip", feature_max_idx['zip'], embedding_dim),
-                            VarLenSparseFeat(SparseFeat('hist_movie_id', feature_max_idx['movie_id'], embedding_dim,
-                                                        embedding_name="movie_id"), SEQ_LEN, 'mean', 'hist_len'),
-                            VarLenSparseFeat(SparseFeat('hist_genres', feature_max_idx['genres'], embedding_dim,
-                                                        embedding_name="genres"), SEQ_LEN, 'mean', 'hist_len')
+                            VarLenSparseFeat(SparseFeat('hist_movie_id', feature_max_idx['movie_id'], embedding_dim, embedding_name="movie_id"), SEQ_LEN, 'mean', 'hist_len'),
+                            VarLenSparseFeat(SparseFeat('hist_genres', feature_max_idx['genres'], embedding_dim,embedding_name="genres"), SEQ_LEN, 'mean', 'hist_len')
                             ]
 
     item_feature_columns = [SparseFeat('movie_id', feature_max_idx['movie_id'], embedding_dim)]

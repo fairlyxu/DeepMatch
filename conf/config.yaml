@@ -1,25 +1,19 @@
 # train
 train:
+    init: false
     train_file:
         user: ../data/user.dat
         item: ../data/item.dat
         sample: ../data/sample.dat
     seq_len: 50
     negsample: 10
+    batch_size: 1024
+    epochs: 20
 
 #
 feat:
-    sparse_feat_file: ../models/sparse_features_label.pkl
-    var_feat_file: ../models/var_features_label.pkl
+    feat_file: ../models/feature_label.pkl
     emb_dim: 16
-    user:
-        sparse: uid,u_st_2_country,u_st_2_lan,u_st_2_brand,u_st_2_channel
-        var: u_dy_5_implist,u_dy_5_clicklist,u_dy_5_installlist
-    item:
-        sparse: iid,d_st_cat3,d_st_from_type,d_st_offer
-        dense: d_dy_4_imppv,d_dy_4_clickpv,d_dy_4_installpv,os_install,os_install_ys,os_soaring,activate_uv,yesterday_2_data_count,remain_count_2,remain_rate_2,yesterday_7_data_count,remain_count_7,remain_rate_7,yesterday_30_data_count,remain_count_30,remain_rate_30,remain_rate
-        var: d_st_tag
-
 model:
     embedding_dim: 32
     weights_save: ../models/dssm_weights.h5

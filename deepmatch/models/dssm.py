@@ -44,6 +44,7 @@ def DSSM(user_feature_columns, item_feature_columns, user_dnn_hidden_units=(64, 
     embedding_matrix_dict = create_embedding_matrix(user_feature_columns + item_feature_columns, l2_reg_embedding,
                                                     seed=seed,
                                                     seq_mask_zero=True)
+    #print("embedding_matrix_dict",embedding_matrix_dict,type(embedding_matrix_dict))
 
     user_features = build_input_features(user_feature_columns)
     user_inputs_list = list(user_features.values())
@@ -54,11 +55,13 @@ def DSSM(user_feature_columns, item_feature_columns, user_dnn_hidden_units=(64, 
     user_dnn_input = combined_dnn_input(user_sparse_embedding_list, user_dense_value_list)
 
     item_features = build_input_features(item_feature_columns)
+    #print("item_features:",item_features)
     item_inputs_list = list(item_features.values())
     item_sparse_embedding_list, item_dense_value_list = input_from_feature_columns(item_features,
                                                                                    item_feature_columns,
                                                                                    l2_reg_embedding, seed=seed,
                                                                                    embedding_matrix_dict=embedding_matrix_dict)
+
     item_dnn_input = combined_dnn_input(item_sparse_embedding_list, item_dense_value_list)
 
     user_dnn_out = DNN(user_dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout,

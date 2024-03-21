@@ -1,7 +1,6 @@
 import os
 import sys
 sys.path.append('../')
-
 from util import config, preprocess
 from features.features import FeaturesProcess
 import tensorflow as tf
@@ -20,7 +19,7 @@ from tensorflow.keras.optimizers import Adam
 
 
 if __name__ == "__main__":
-    yaml_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../conf/config.yaml")
+    yaml_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../conf/config_test.yaml")
     feature_yaml_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../conf/features.yaml")
     conf = config.get_conf(yaml_path)
     TRAIN_CONF = conf.get("train")
@@ -66,7 +65,7 @@ if __name__ == "__main__":
     user = user.infer_objects()
     item.index.name = "index"
     user.index.name = "index"
-    #ratings = ratings.iloc[:8000]
+    ratings = ratings.iloc[:3000]
     data = pd.merge(pd.merge(ratings, user, how = "left"), item, how = "left")
     print(data.head(10))
 
@@ -98,25 +97,26 @@ if __name__ == "__main__":
     else:
         K.set_learning_phase(True)
     try:
+        if len(weights_save_file) > 0 and os.path.exists(weights_save_file):
+            print(" load model ")
+        model = load_model(weights_save_file, custom_objects)
+    except:
+        traceback.print_exc()
+        print("init new model")
         model_embedding_dim = MODEL_CONF.get('embedding_dim', 32)
         model = DSSM(user_feature_columns, item_feature_columns, user_dnn_hidden_units=(128, 64, model_embedding_dim),
                      item_dnn_hidden_units=(64, model_embedding_dim,), loss_type='softmax',
                      sampler_config=sampler_config)
 
+    model.compile(optimizer="adam", loss=sampledsoftmaxloss)
 
-        model.compile(optimizer=Adam(learning_rate=0.001), loss=sampledsoftmaxloss)
+    # training
+    history = model.fit(train_model_input, train_label, batch_size=train_batch_size, epochs=train_epochs, verbose=1,
+                        validation_split=0.2)
 
-        if len(weights_save_file) > 0 and os.path.exists(weights_save_file):
-            print(" load weight: ")
-            model.load_weights(weights_save_file)
-        print(model.summary())
-        # training
-        history = model.fit(train_model_input, train_label, batch_size=train_batch_size, epochs=train_epochs, verbose=1,
-                            validation_split=0.2)
+    print(model.get_weights())
 
-    except:
-        traceback.print_exc()
-    model.save_weights(weights_save_file)
+    save_model(model, weights_save_file)
     print("model save over～")
 
 

@@ -1,6 +1,6 @@
 import pandas as pd
 from deepmatch.models import NCF
-from utils.preprocess import gen_data_set, gen_model_input
+from util.preprocess import gen_data_set, gen_model_input
 from sklearn.preprocessing import LabelEncoder
 
 if __name__ == "__main__":

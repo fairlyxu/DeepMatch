@@ -1,0 +1,99 @@
+# yaml
+uid:
+    type: 1
+    cate: 1
+    size: 1000000000
+u_st_2_country:
+    type: 1
+    cate: 1
+u_st_2_lan:
+    type: 1
+    cate: 1
+u_st_2_brand:
+    type: 1
+    cate: 1
+u_st_2_channel:
+    type: 1
+    cate: 1
+u_dy_5_implist:
+    type: 3
+    cate: 1
+    shared: iid
+    size: 1000000
+u_dy_5_clicklist:
+    type: 3
+    cate: 1
+    shared: iid
+    size: 1000000
+u_dy_5_installlist:
+    type: 3
+    cate: 1
+    shared: iid
+    size: 1000000
+iid:
+    type: 1
+    cate: 2
+    size: 1000000
+d_st_cat3:
+    type: 1
+    cate: 2
+d_st_from_type:
+    type: 1
+    cate: 2
+d_st_offer:
+    type: 1
+    cate: 2
+d_st_tag:
+    type: 3
+    cate: 2
+d_dy_4_imppv:
+    type: 2
+    cate: 2
+d_dy_4_clickpv:
+    type: 2
+    cate: 2
+d_dy_4_installpv:
+    type: 2
+    cate: 2
+os_install:
+    type: 2
+    cate: 2
+os_install_ys:
+    type: 2
+    cate: 2
+os_soaring:
+    type: 2
+    cate: 2
+activate_uv:
+    type: 2
+    cate: 2
+yesterday_2_data_count:
+    type: 2
+    cate: 2
+remain_count_2:
+    type: 2
+    cate: 2
+remain_rate_2:
+    type: 2
+    cate: 2
+yesterday_7_data_count:
+    type: 2
+    cate: 2
+remain_count_7:
+    type: 2
+    cate: 2
+remain_rate_7:
+    type: 2
+    cate: 2
+yesterday_30_data_count:
+    type: 2
+    cate: 2
+remain_count_30:
+    type: 2
+    cate: 2
+remain_rate_30:
+    type: 2
+    cate: 2
+remain_rate:
+    type: 2
+    cate: 2

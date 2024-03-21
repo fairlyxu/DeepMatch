@@ -125,7 +125,7 @@ if __name__ == "__main__":
     # import numpy as np
     # import faiss
     # from tqdm import tqdm
-    # from deepmatch.utils import recall_N
+    # from deepmatch.util import recall_N
     #
     # index = faiss.IndexFlatIP(embedding_dim)
     # # faiss.normalize_L2(item_embs)
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     # import numpy as np
     # import faiss
     # from tqdm import tqdm
-    # from deepmatch.utils import recall_N
+    # from deepmatch.util import recall_N
     #
     # index = faiss.IndexFlatIP(embedding_dim)
     # # faiss.normalize_L2(item_embs)
@@ -409,7 +409,7 @@ if __name__ == "__main__":
     # import numpy as np
     # import faiss
     # from tqdm import tqdm
-    # from deepmatch.utils import recall_N
+    # from deepmatch.util import recall_N
     #
     # index = faiss.IndexFlatIP(embedding_dim)
     # # faiss.normalize_L2(item_embs)
@@ -540,7 +540,7 @@ if __name__ == "__main__":
     # import numpy as np
     # import faiss
     # from tqdm import tqdm
-    # from deepmatch.utils import recall_N
+    # from deepmatch.util import recall_N
     #
     # index = faiss.IndexFlatIP(embedding_dim)
     # # faiss.normalize_L2(item_embs)

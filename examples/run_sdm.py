@@ -2,7 +2,7 @@ import pandas as pd
 from deepctr.feature_column import SparseFeat, VarLenSparseFeat
 from deepmatch.models import SDM
 from deepmatch.utils import sampledsoftmaxloss, NegativeSampler
-from utils.preprocess import gen_data_set_sdm, gen_model_input_sdm
+from util.preprocess import gen_data_set_sdm, gen_model_input_sdm
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # from tqdm import tqdm
     # import numpy as np
     # import faiss
-    # from deepmatch.utils import recall_N
+    # from deepmatch.util import recall_N
     #
     # k_max = 1
     # topN = 50

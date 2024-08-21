@@ -5,6 +5,7 @@ from deepmatch.utils import sampledsoftmaxloss, NegativeSampler
 from util.preprocess import gen_data_set, gen_model_input
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.keras.models import Model
+pd.set_option('display.max_columns', None)
 
 if __name__ == "__main__":
 
@@ -13,9 +14,10 @@ if __name__ == "__main__":
                        "gender", "age", "occupation", "zip", "genres"]
     SEQ_LEN = 50
     negsample = 10
+    data = data.head(100)
 
     # 1.Label Encoding for sparse features,and process sequence features with `gen_date_set` and `gen_model_input`
-
+    print(data.head())
     feature_max_idx = {}
     for feature in sparse_features:
         lbe = LabelEncoder()
@@ -24,11 +26,16 @@ if __name__ == "__main__":
 
     user_profile = data[["user_id", "gender", "age", "occupation", "zip"]].drop_duplicates('user_id')
 
+    print(data.head())
+
     item_profile = data[["movie_id", "genres"]].drop_duplicates('movie_id')
+    print("item_profile:",item_profile)
 
     user_profile.set_index("user_id", inplace=True)
 
     user_item_list = data.groupby("user_id")['movie_id'].apply(list)
+    print("user_item_list:",user_item_list)
+    print("data",data.head(5))
 
     train_set, test_set = gen_data_set(data, SEQ_LEN, negsample)
 
@@ -79,8 +86,9 @@ if __name__ == "__main__":
 
     # 4. Generate user features for testing and full item features for retrieval
     test_user_model_input = test_model_input
+    print("test_user_model_input",test_user_model_input)
     all_item_model_input = {"movie_id": item_profile['movie_id'].values, "genres": item_profile['genres'].values}
-
+    print("all_item_model_input", all_item_model_input)
     user_embedding_model = Model(inputs=model.user_input, outputs=model.user_embedding)
     item_embedding_model = Model(inputs=model.item_input, outputs=model.item_embedding)
 
@@ -90,31 +98,40 @@ if __name__ == "__main__":
     print(user_embs.shape)
     print(item_embs.shape)
 
+
+    #print(item_embs)
+
     # 5. [Optional] ANN search by faiss and evaluate the result
 
-    # test_true_label = {line[0]:[line[1]] for line in test_set}
-    #
-    # import numpy as np
-    # import faiss
-    # from tqdm import tqdm
-    # from deepmatch.util import recall_N
-    #
-    # index = faiss.IndexFlatIP(embedding_dim)
-    # # faiss.normalize_L2(item_embs)
-    # index.add(item_embs)
-    # # faiss.normalize_L2(user_embs)
-    # D, I = index.search(user_embs, 50)
-    # s = []
-    # hit = 0
-    # for i, uid in tqdm(enumerate(test_user_model_input['user_id'])):
-    #     try:
-    #         pred = [item_profile['movie_id'].values[x] for x in I[i]]
-    #         filter_item = None
-    #         recall_score = recall_N(test_true_label[uid], pred, N=50)
-    #         s.append(recall_score)
-    #         if test_true_label[uid] in pred:
-    #             hit += 1
-    #     except:
-    #         print(i)
-    # print("recall", np.mean(s))
-    # print("hr", hit / len(test_user_model_input['user_id']))
+    """
+
+    test_true_label = {line[0]:[line[1]] for line in test_set}
+
+    import numpy as np
+    import faiss
+    from tqdm import tqdm
+    from deepmatch.utils import recall_N
+
+    index = faiss.IndexFlatIP(embedding_dim)
+    # faiss.normalize_L2(item_embs)
+    index.add(item_embs)
+    # faiss.normalize_L2(user_embs)
+    D, I = index.search(user_embs, 50)
+    s = []
+    hit = 0
+    for i, uid in tqdm(enumerate(test_user_model_input['user_id'])):
+        try:
+            pred = [item_profile['movie_id'].values[x] for x in I[i]]
+            #print("pred:",pred)
+            filter_item = None
+            recall_score = recall_N(test_true_label[uid], pred, N=50)
+            s.append(recall_score)
+            if test_true_label[uid] in pred:
+                hit += 1
+        except:
+            print("error:",i,uid)
+    print("recall", np.mean(s))
+    print("hr", hit / len(test_user_model_input['user_id']))
+    
+    
+    """

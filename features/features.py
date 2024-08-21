@@ -17,7 +17,6 @@ class FeaturesProcess():
         self.embedding_dim = embedding_dim
         self.features_label = {}
 
-
         try:
             with open(features_label_file, 'rb') as f:
                 self.features_label = pickle.load(f)
@@ -37,13 +36,13 @@ class FeaturesProcess():
             tmp["r_lables"] = {}
             tmp["max"] = 0
             self.features_label[f_key] = tmp
-            print(" new tmp ","##"*10)
+            #print(" new tmp ","##"*10)
         if f_value not in self.features_label[f_key]["e_lable"]:
             index = self.features_label[f_key]["max"] + 1
             self.features_label[f_key]["max"] = index
             self.features_label[f_key]["e_lable"][f_value] = index
             self.features_label[f_key]["r_lables"][index] = f_value
-            print(" new f_value ", "%%" * 10)
+            #print(" new f_value ", "%%" * 10)
         return self.features_label[f_key]["e_lable"].get(f_value)
 
 
@@ -61,12 +60,11 @@ class FeaturesProcess():
         def get_var_feature(data_list, emb_name,max_len=100):
             var_feature_list = [[self.feature_label_encode(emb_name, i) for i in sub_list] if isinstance(sub_list, list) else [] for sub_list in data_list]
             var_feature = pad_sequences(var_feature_list, maxlen=max_len, padding='post')
-            print(f_name,":var_feature:",var_feature.shape)
+            #print(f_name,":var_feature:",var_feature.shape)
             return var_feature
 
         var_feature_dict = {}
         varlen_feature_columns = []
-
         for k, v in var_feature.items():
             f_name = k
             vocabulary_size = v.get('size', 1000000)
@@ -140,7 +138,6 @@ class FeaturesProcess():
         dense_features = user_dense_features + item_dense_features
 
         # add user history as user_varlen_feature_columns
-        # print(sparse_features + dense_features)
         train_model_input = {name: data[name] for name in (sparse_features + dense_features)}
 
         for f_name in user_var_f.keys():
@@ -149,6 +146,5 @@ class FeaturesProcess():
             train_model_input[f_name] = item_var_feature_dict[f_name]["var_feature_list"]
 
         self.save_feature_file()
-
         return train_model_input, user_feature_columns,item_feature_columns
 

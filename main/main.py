@@ -17,6 +17,8 @@ import traceback
 from tensorflow.python.keras.models import save_model,load_model
 from deepmatch.layers import custom_objects
 from tensorflow.keras.optimizers import Adam
+from tensorflow.python.keras.models import Model
+pd.set_option('display.max_columns', None)
 
 
 if __name__ == "__main__":
@@ -35,7 +37,7 @@ if __name__ == "__main__":
     negsample = TRAIN_CONF.get('negsample',10)
 
     train_batch_size=TRAIN_CONF.get('batch_size',256)
-    train_epochs = TRAIN_CONF.get('epochs', 10)
+    train_epochs = 1#TRAIN_CONF.get('epochs', 10)
 
     #获取样本数据
     rnames = ['uid', 'iid', 'rating']
@@ -66,9 +68,10 @@ if __name__ == "__main__":
     user = user.infer_objects()
     item.index.name = "index"
     user.index.name = "index"
-    #ratings = ratings.iloc[:8000]
+    ratings = ratings.iloc[:1000]
     data = pd.merge(pd.merge(ratings, user, how = "left"), item, how = "left")
-    print(data.head(10))
+    data = ratings
+    print("data:",data.head(10))
 
     print("*" * 100, " features process")
     feat_embedding_dim = FEAT_CONF.get("emb_dim", 16)
@@ -78,7 +81,7 @@ if __name__ == "__main__":
     feature_process = FeaturesProcess(feature_yaml_path,features_label_file,embedding_dim = 16)
 
     train_model_input, user_feature_columns, item_feature_columns = feature_process.feat_process(data)
-    print(train_model_input)
+    print("item_feature_columns:",item_feature_columns)
 
     train_label = data["rating"]
     print("*" * 100, " training process")
@@ -117,7 +120,26 @@ if __name__ == "__main__":
     except:
         traceback.print_exc()
     model.save_weights(weights_save_file)
+    print("user_embedding:",model.user_embedding)
+    print("item_embedding",model.item_embedding)
     print("model save over～")
+
+    #print("item_feature_columns:",item_feature_columns)
+
+    # 4. Generate user features for testing and full item features for retrieval
+    print(item['d_st_2_did'].values)
+    #test_user_model_input = item_feature_columns
+    all_item_model_input = {"iid": data['iid'].values}
+
+    #user_embedding_model = Model(inputs=model.user_input, outputs=model.user_embedding)
+    item_embedding_model = Model(inputs=model.item_input, outputs=model.item_embedding)
+
+    #user_embs = user_embedding_model.predict(test_user_model_input, batch_size=2 ** 12)
+    item_embs = item_embedding_model.predict(all_item_model_input, batch_size=2 ** 12)
+
+    #print(user_embs.shape)
+    print(item_embs.shape)
+    print(item_embs)
 
 
 

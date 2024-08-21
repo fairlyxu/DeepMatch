@@ -133,3 +133,5 @@ dmypy.json
 .pyre/
 /data/
 /models/
+/output/
+/output/

@@ -9,47 +9,7 @@ def split_string(s):
     else:
         return s.split(",")
 
-
-
 def gen_data_set(data, seq_max_len=50, negsample=0):
-    data.sort_values("timestamp", inplace=True)
-    item_ids = data['movie_id'].unique()
-    item_id_genres_map = dict(zip(data['movie_id'].values, data['genres'].values))
-    train_set = []
-    test_set = []
-    for reviewerID, hist in tqdm(data.groupby('user_id')):
-        pos_list = hist['movie_id'].tolist()
-        genres_list = hist['genres'].tolist()
-        rating_list = hist['rating'].tolist()
-
-        if negsample > 0:
-            candidate_set = list(set(item_ids) - set(pos_list))
-            neg_list = np.random.choice(candidate_set, size=len(pos_list) * negsample, replace=True)
-        for i in range(1, len(pos_list)):
-            hist = pos_list[:i]
-            genres_hist = genres_list[:i]
-            seq_len = min(i, seq_max_len)
-            if i != len(pos_list) - 1:
-                train_set.append((
-                    reviewerID, pos_list[i], 1, hist[::-1][:seq_len], seq_len, genres_hist[::-1][:seq_len],
-                    genres_list[i],
-                    rating_list[i]))
-                for negi in range(negsample):
-                    train_set.append((reviewerID, neg_list[i * negsample + negi], 0, hist[::-1][:seq_len], seq_len,
-                                      genres_hist[::-1][:seq_len], item_id_genres_map[neg_list[i * negsample + negi]]))
-            else:
-                test_set.append((reviewerID, pos_list[i], 1, hist[::-1][:seq_len], seq_len, genres_hist[::-1][:seq_len],
-                                 genres_list[i],
-                                 rating_list[i]))
-
-    random.shuffle(train_set)
-    random.shuffle(test_set)
-
-    print(len(train_set[0]), len(test_set[0]))
-
-    return train_set, test_set
-
-def gen_data_set_1(data, seq_max_len=50, negsample=0):
     """
     Args:
         data:

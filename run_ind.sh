@@ -4,7 +4,7 @@ path=$(dirname $0)
 pwd
 
 PYHON_HOME='/root/anaconda3/envs/tf2py37/bin'
-dt=$1
+dt=`date -d "1 day ago" +"%Y%m%d"`
 
 aws s3 cp s3://transsion-algo-ind/offline/palmstore/sample/dssm_recall_v2/${dt}/sample.dat data/
 aws s3 cp s3://transsion-algo-ind/offline/palmstore/sample/dssm_recall_v2/${dt}/user.dat data/

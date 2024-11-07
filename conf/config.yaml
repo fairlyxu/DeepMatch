@@ -19,4 +19,3 @@ model:
     weights_save: ../models/youtobednn_weights.h5
     item_emb: ../models/item.emb
     user_emb: ../models/user.emb
-

@@ -37,18 +37,18 @@ class FeaturesProcess():
             tmp["r_lables"] = {}
             tmp["max"] = 0
             self.features_label[f_key] = tmp
-            print(" new tmp ","##"*10)
+            #print(" new f_key: ",f_key, " **" * 10)
         if f_value not in self.features_label[f_key]["e_lable"]:
             index = self.features_label[f_key]["max"] + 1
             self.features_label[f_key]["max"] = index
             self.features_label[f_key]["e_lable"][f_value] = index
             self.features_label[f_key]["r_lables"][index] = f_value
-            print(" new f_value ", "%%" * 10)
+            #print(" new f_value: ",f_value, " **" * 10)
         return self.features_label[f_key]["e_lable"].get(f_value)
 
 
 
-    def var_feat_process(self,data,var_feature={}):
+    def var_feat_process(self,data,var_feature={}):#, embedding_dim=16,features_label_file=""
 
         """
         Args:
@@ -75,7 +75,6 @@ class FeaturesProcess():
             embedding_name = f_name
             if 'shared' in v and len(v['shared']) > 0:
                 embedding_name = v['shared']
-
             if f_name not in data.columns:
                 data[f_name] = ""
             var_feature_list = get_var_feature(data[f_name].values, embedding_name,max_len)

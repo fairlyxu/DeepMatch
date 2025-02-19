@@ -102,7 +102,6 @@ if __name__ == "__main__":
 
     print("*" * 100," sample data process")
     SEQ_LEN = TRAIN_CONF.get('seq_len',50)
-    negsample = TRAIN_CONF.get('negsample',10)
 
     train_batch_size=TRAIN_CONF.get('batch_size',256)
     train_epochs = 1#TRAIN_CONF.get('epochs', 10)

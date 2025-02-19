@@ -2,56 +2,45 @@ import numpy as np
 import random
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 from tqdm import tqdm
-import os
-def split_string(s):
-    if s == "":
-        return []
-    else:
-        return s.split(",")
+
 
 def gen_data_set(data, seq_max_len=50, negsample=0):
-    """
-    Args:
-        data:
-        seq_max_len:
-        negsample:
-
-    Returns:
-    """
     data.sort_values("timestamp", inplace=True)
-    item_ids = data['iid'].unique()
-    data_set = []
-    dup= {}
-    groups = data.groupby('uid')
-    for reviewerID, hist in tqdm(groups):
-        pos_list = hist['iid'].tolist()
+    item_ids = data['movie_id'].unique()
+    item_id_genres_map = dict(zip(data['movie_id'].values, data['genres'].values))
+    train_set = []
+    test_set = []
+    for reviewerID, hist in tqdm(data.groupby('user_id')):
+        pos_list = hist['movie_id'].tolist()
+        genres_list = hist['genres'].tolist()
         rating_list = hist['rating'].tolist()
+
         if negsample > 0:
             candidate_set = list(set(item_ids) - set(pos_list))
             neg_list = np.random.choice(candidate_set, size=len(pos_list) * negsample, replace=True)
         for i in range(1, len(pos_list)):
             hist = pos_list[:i]
+            genres_hist = genres_list[:i]
             seq_len = min(i, seq_max_len)
-            if (str(reviewerID ) +"-"+ str(pos_list[i])+"-1") not  in dup.keys():
-                if i != len(pos_list) - 1:
-                    if (str(reviewerID ) +"-"+ str(pos_list[i])+"-1")  not in dup.keys():
-                        data_set.append((reviewerID, pos_list[i], 1, hist[::-1][:seq_len], seq_len, rating_list[i]))
-                        dup[str(reviewerID)+"-"+ str(pos_list[i])+"-1"] = 1
-                    for negi in range(negsample):
-                        if (str(reviewerID ) +"-"+ str(neg_list[i * negsample + negi])+"-0")  not in dup.keys():
-                            data_set.append((reviewerID, neg_list[i * negsample + negi], 0, hist[::-1][:seq_len], seq_len))
-                            dup[str(reviewerID)+"-"+ str(neg_list[i * negsample + negi])+"-0"] = 1
+            if i != len(pos_list) - 1:
+                train_set.append((
+                    reviewerID, pos_list[i], 1, hist[::-1][:seq_len], seq_len, genres_hist[::-1][:seq_len],
+                    genres_list[i],
+                    rating_list[i]))
+                for negi in range(negsample):
+                    train_set.append((reviewerID, neg_list[i * negsample + negi], 0, hist[::-1][:seq_len], seq_len,
+                                      genres_hist[::-1][:seq_len], item_id_genres_map[neg_list[i * negsample + negi]]))
+            else:
+                test_set.append((reviewerID, pos_list[i], 1, hist[::-1][:seq_len], seq_len, genres_hist[::-1][:seq_len],
+                                 genres_list[i],
+                                 rating_list[i]))
 
-                else:
-                    if (str(reviewerID ) +"-"+ str(pos_list[i])+"-1")  not in dup.keys():
-                        data_set.append((reviewerID, pos_list[i], 1, hist[::-1][:seq_len], seq_len,rating_list[i]))
-                        dup[str(reviewerID)+"-"+ str(pos_list[i])+"-1"] = 1
+    random.shuffle(train_set)
+    random.shuffle(test_set)
 
-    random.shuffle(data_set)
-    print("data size:",len(data_set ))
-    return data_set
+    print(len(train_set[0]), len(test_set[0]))
 
-
+    return train_set, test_set
 
 
 def gen_data_set_sdm(data, seq_short_max_len=5, seq_prefer_max_len=50):
@@ -86,6 +75,7 @@ def gen_data_set_sdm(data, seq_short_max_len=5, seq_prefer_max_len=50):
     print(len(train_set[0]), len(test_set[0]))
 
     return train_set, test_set
+
 
 def gen_model_input(train_set, user_profile, seq_max_len):
     train_uid = np.array([line[0] for line in train_set])

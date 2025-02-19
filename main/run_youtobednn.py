@@ -20,8 +20,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.python.keras.models import Model
 pd.set_option('display.max_columns', None)
 
-from annoy import AnnoyIndex
-import collections
+#from annoy import AnnoyIndex
+#import collections
 
 
 
@@ -128,9 +128,11 @@ if __name__ == "__main__":
     train_counter = Counter(train_model_input['iid'])
 
     vs = int(item_feature_columns[0].vocabulary_size)
+    print("vs:",vs)
     item_count = [train_counter.get(int(i), 0) for i in range(vs)]
+    print("item_count:",item_count[0:5])
     #sampler_config = NegativeSampler('inbatch', num_sampled=255, item_name="iid", item_count=item_count)
-    sampler_config = NegativeSampler('frequency', num_sampled=5, item_name='iid', item_count=item_count)
+    sampler_config = NegativeSampler('frequency', num_sampled=1, item_name='iid', item_count=item_count)
     weights_save_file = MODEL_CONF.get('weights_save','../models/ytb_weights.h5')
 
     # 3.Define Model and train
@@ -145,12 +147,11 @@ if __name__ == "__main__":
         model_embedding_dim = MODEL_CONF.get('embedding_dim', 16)
         print("model_embedding_dim:",model_embedding_dim)
 
-        model = YoutubeDNN(user_feature_columns, item_feature_columns, user_dnn_hidden_units=(64, model_embedding_dim),
-                           sampler_config=sampler_config)
+        model = YoutubeDNN(user_feature_columns, item_feature_columns, user_dnn_hidden_units=(64, model_embedding_dim),sampler_config=sampler_config)
         # model = MIND(user_feature_columns, item_feature_columns, dynamic_k=False, k_max=2,
         #              user_dnn_hidden_units=(64, embedding_dim), sampler_config=sampler_config)
-
-        model.compile(optimizer=Adam(learning_rate=0.001), loss=sampledsoftmaxloss)
+        #model = YoutubeDNN(user_feature_columns, item_feature_columns,  user_dnn_hidden_units=(64, 16))
+        model.compile(optimizer=Adam(learning_rate=0.01), loss=sampledsoftmaxloss)
 
         if len(weights_save_file) > 0 and os.path.exists(weights_save_file):
             print(" load weight: ")
@@ -163,7 +164,7 @@ if __name__ == "__main__":
         traceback.print_exc()
     model.save_weights(weights_save_file)
     feature_process.save_feature_file()
-    print("model save over～ cost time:", time()-t3)
+    print("model save over～ cost time:", time.time()-t3)
 
     # 4. Generate user features for testing and full item features for retrieval
     test_user_model_input = train_model_input

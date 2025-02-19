@@ -8,10 +8,11 @@ import pickle
 import math
 from annoy import AnnoyIndex
 import argparse
-#import redis
+import redis
 
 import time
-
+host="engineps-bm-01.fdjq4c.ng.0001.aps1.cache.amazonaws.com"
+db=15
 
 class TopKSearch(object):
     def __init__(self, input_vecs):
@@ -87,7 +88,7 @@ class TopKSearch(object):
         f = open(outfile, 'w')
         K = topk * 3
         i = 0
-        sim_arr = []
+        sim_dict = {}
         res = {}
         for (_id, vec) in self.embeddings.items():
             if _id not in items_ids:
@@ -106,12 +107,12 @@ class TopKSearch(object):
             if len(sim) > 0:
                 res[_id] = ','.join(sim[:topk])
                 f.write('%s\t%s\n' % (_id, ','.join(sim[:topk])))
-                sim_arr.append({'uid': _id, 'sim': ','.join(sim[:topk])})
+                sim_dict[_id] = ','.join(sim[:topk])
                 i += 1
 
-        print("push to redis, item length", len(sim_arr))
+        print("push to redis, item length", len(sim_dict))
         f.close()
-        return sim_arr
+        return sim_dict
 
 
 
@@ -127,6 +128,7 @@ class TopKSearch(object):
         K = topk * 3
         i = 0
         sim_arr = []
+        sim_dict = {}
         res = {}
         for (_id, vec) in embeddings.items():
             tmp = self.vect_tree.get_nns_by_vector(vec, K, search_k=-1, include_distances=True)
@@ -148,9 +150,9 @@ class TopKSearch(object):
 
         print("push to redis, item length", len(sim_arr))
         f.close()
-        return sim_arr
+        return res
 
-def push_to_redis(datas,key,host,db):
+def push_to_redis(datas,key):
     """
     param
     datas: {'uid': 'simlist'}
@@ -167,8 +169,6 @@ def push_to_redis(datas,key,host,db):
         print(e)
 
 
-
-
 def parse_args():
     """
     Parses the node2vec arguments.
@@ -178,10 +178,7 @@ def parse_args():
                         help='graph_model')
     parser.add_argument('--output', nargs='?', default='../output/sim.csv',
                         help='result output')
-    parser.add_argument('--redis_host', nargs='?', default='engine-ire-01.htryhl.0001.euw1.cache.amazonaws.com',
-                        help='redis_host')
-    parser.add_argument('--redis_db', nargs='?', default='engine-ire-01.htryhl.0001.euw1.cache.amazonaws.com',
-                        help=4)
+
     return parser.parse_args()
 
 
@@ -210,10 +207,10 @@ def main(args):
     print("items length is %d" % (items_size))
     if items_size < 1:
         return
-    #datas = tk.gen_topk(items_ids, args.output)
     datas = tk.get_youtube_recall_res(embeddings,outfile="../output/i2i_sim.csv" )
+    push_to_redis(datas,"youtobei2i_v3" )
     datas = tk.get_youtube_recall_res(user_embeddings,outfile="../output/u2i_sim.csv" )
-    #push_to_redis(datas, args.redis_host, args.redis_db)
+    push_to_redis(datas,"youtobeu2i_v3" )
 
 
 if __name__ == '__main__':

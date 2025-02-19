@@ -1,0 +1,18 @@
+# yaml
+iid:
+    type: 1
+    cate: 2
+    size: 80000
+u_st_2_country:
+    type: 1
+    cate: 1
+u_dy_5_implist:
+    type: 3
+    cate: 1
+    shared: iid
+    size: 1000000
+u_dy_5_clicklist:
+    type: 3
+    cate: 1
+    shared: iid
+    size: 1000000
